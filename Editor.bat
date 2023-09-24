@@ -117,8 +117,9 @@ EXIT /B
 		IF %choice% == 9 (SET /A exit_condition = 1)
 		IF %choice% == 10 (SET /A exit_condition = 1)
 		IF %choice% == 11 (
-			ECHO Sorry, I can't figure out how to save :^(
-			ECHO Press any key to shame me.&pause>nul )
+			ECHO Sorry, this program doesn't save :^(
+			ECHO Press any key to shame the developer.
+			pause>nul )
 		IF %exit_condition% NEQ 0 (EXIT /B)
 		GOTO MAIN-LOOP
 
