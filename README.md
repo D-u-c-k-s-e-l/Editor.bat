@@ -57,6 +57,7 @@ You can configure the editor using the variables below:
 - `INP.SAVE`
 - `WIN.HEIGHT`
 - `WIN.LINE_NOs`
+
 They are all described in the `Editor.bat` file.
 
 # Important warnings
