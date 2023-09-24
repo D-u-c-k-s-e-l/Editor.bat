@@ -2,10 +2,12 @@
 `Editor.bat` is a less functional text editor for windows command prompt
 
 # Running
-To run the program, type the following in command prompt (`cmd`):
-```bat
-main filename
-```
+To run the program:
+1) be in the same active directory as Editor.bat
+2) type the following in command prompt (`cmd`):
+	```bat
+	Editor filename
+	```
 
 `filename` is the name of the file that will be run.
 
