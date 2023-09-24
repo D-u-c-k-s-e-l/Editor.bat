@@ -9,7 +9,7 @@ To run the program:
 	Editor filename
 	```
 
-`filename` is the name of the file that will be run.
+`filename` is the name of the file that will be edited.
 
 # Limitations
 As written in [#About](#about) above, this is a less functional text editor meaning there are a few limitations on what it can do.
