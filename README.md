@@ -14,9 +14,8 @@ To run the program:
 # Limitations
 As written in [#About](#about) above, this is a less functional text editor meaning there are a few limitations on what it can do.
 
-- This software does not show any `!` or `%` characters.
+- This software does not show most `!` or `%` characters.
 - This software will not show blank lines.
-- This software can not save files.
 - This software only replaces a whole line at a time.
 
 # Using the editor
@@ -30,7 +29,7 @@ Press [`e`] to replace a line.
 Press [`d`] to remove a line.  
 Press [`r`] to insert a blank line above the current line.  
 Press [`f`] to insert a blank line below the current line.  
-Press [`z`] to be disappointed.  
+Press [`z`] to open the save file dialogue.  
 Press [`h`] to be disappointed.  
 Press [`x`] to quit.
 
@@ -57,15 +56,8 @@ You can configure the editor using the variables below:
 - `INP.QUIT`
 - `INP.HELP`
 - `INP.SAVE`
+- `INP.SV_AS`
 - `WIN.HEIGHT`
 - `WIN.LINE_NOs`
 
 They are all described in the `Editor.bat` file.
-
-# Important warnings
-The text editor cannot handle files that contain the character `%` followed by the character `1`.
-This is because percent-one causes a recursive variable expansion loop and the program will get stuck.
-
-A access error may occur when the text editor encounters the character `%` followed by the character `Z`.
-This is because the loop that reads the file uses this variable.
-Please be aware that a segfault may occur here and programs like `wine` may have core dumps.

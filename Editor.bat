@@ -55,6 +55,9 @@ EXIT /B
 	::you!!
 	SET INP.SAVE=z
 	::INP.SAVE: Saves the file.
+	SET INP.SV_AS=s
+	::INP.SV_AS: Presented as an option to save as
+	::when saving.
 	::	================   Window   ================	::
 	SET /A WIN.HEIGHT = 20
 	::WIN.HEIGHT: How many lines to display (not
@@ -67,7 +70,7 @@ EXIT /B
 :LOAD
 	:LOAD_FILE
 		SET /A CURRENT_LINE_NUMBER = 1
-		FOR /F "tokens=*" %%Z IN (%_-_-FILENAME-_-_%) DO CALL :LOAD_FILE-SET_LINE "%%Z"
+		FOR /F "usebackq tokens=*" %%Z IN ("%_-_-FILENAME-_-_%") DO CALL :LOAD_FILE-SET_LINE "%%Z"
 		GOTO LOAD_FILE-END
 		:LOAD_FILE-SET_LINE <line contents>
 			SET "FILE_%CURRENT_LINE_NUMBER%=%~1"
@@ -93,12 +96,12 @@ EXIT /B
 		rem IF %end_of_screen% GEQ %Lines_in_file% (
 			rem 
 		rem )
-		ECHO [H[36m========================================[m
+		ECHO [H[2K[36m========================================[m
 		FOR /l %%i in (%scroll%,1,%end_of_screen%) do (CALL :DrawLine %%i)
 		ECHO [2K[36mln%line%	================================[m
 		ECHO [2K[33m[%INP.SC_UP%]ScrollUp   [%INP.MV_UP%]MoveUp   [%INP.RP_LN%]Replace [%INP.IN_AB%]InsAbove [%INP.SAVE%]Save
 		ECHO [2K[%INP.SC_DN%]ScrollDown [%INP.MV_DN%]MoveDown [%INP.RM_LN%]Remove  [%INP.IN_BE%]InsBelow [%INP.HELP%]Help [%INP.QUIT%]Quit
-		CHOICE /c:%INP.SC_UP%%INP.SC_DN%%INP.MV_UP%%INP.MV_DN%%INP.RP_LN%%INP.RM_LN%%INP.IN_AB%%INP.IN_BE%%INP.QUIT%%INP.HELP%%INP.SAVE% /N :[m[J 
+		CHOICE /c:%INP.SC_UP%%INP.SC_DN%%INP.MV_UP%%INP.MV_DN%%INP.RP_LN%%INP.RM_LN%%INP.IN_AB%%INP.IN_BE%%INP.QUIT%%INP.HELP%%INP.SAVE% /N /M :[m[J 
 		SET choice=%ERRORLEVEL%
 		IF %choice% == 1 (IF %scroll% GTR 1 (
 			IF %end_of_screen% == %line% (SET /A line -= 1)
@@ -107,19 +110,18 @@ EXIT /B
 			IF %scroll% == %line% (SET /A line += 1)
 			SET /A scroll += 1))
 		IF %choice% == 3 (IF %line% GTR 1 (IF %line% == %scroll% (
-			SET /A scroll -= 1)&SET /A line -= 1))
+			SET /A scroll -= 1)
+			SET /A line -= 1))
 		IF %choice% == 4 (IF %line% LSS %Lines_in_file% (IF %line% == %end_of_screen% (
-			SET /A scroll += 1)&SET /A line += 1))
+			SET /A scroll += 1)
+			SET /A line += 1))
 		IF %choice% == 5 (SET /P FILE_%line%=[31m%line%:[m )
 		IF %choice% == 6 (CALL :DeleteLine %line%)
 		IF %choice% == 7 (CALL :InsertLineAbove %line%)
 		IF %choice% == 8 (CALL :InsertLineBelow %line%&SET /A line += 1)
 		IF %choice% == 9 (SET /A exit_condition = 1)
 		IF %choice% == 10 (SET /A exit_condition = 1)
-		IF %choice% == 11 (
-			ECHO Sorry, this program doesn't save :^(
-			ECHO Press any key to shame the developer.
-			pause>nul )
+		IF %choice% == 11 (CALL :SaveDocument)
 		IF %exit_condition% NEQ 0 (EXIT /B)
 		GOTO MAIN-LOOP
 
@@ -147,7 +149,7 @@ EXIT /B
 	SET /A new_length = %Lines_in_file% - 2
 	:DeleteLine-DelLoop
 		SET /A line_no_plus_one = %line_no% + 1
-		SET FILE_%line_no%=!FILE_%line_no_plus_one%!
+		SET "FILE_%line_no%=!FILE_%line_no_plus_one%!"
 		SET /A line_no = %line_no_plus_one%
 		IF %line_no% LSS %new_length% (GOTO :DeleteLine-DelLoop)
 	SET /A Lines_in_file = %new_length% + 1
@@ -164,10 +166,56 @@ EXIT /B
 	SET /A current_line_no = %new_length%
 	:InsertAbove-Loop
 		SET /A line_no_plus_one = %current_line_no% + 1
-		SET FILE_%line_no_plus_one%=!FILE_%current_line_no%!
+		SET "FILE_%line_no_plus_one%=!FILE_%current_line_no%!"
 		SET /A current_line_no -= 1
 		IF %current_line_no% GTR %line_no% (GOTO :InsertAbove-Loop)
 	SET /A line_no += 1
 	SET FILE_%line_no%=
 	SET /A Lines_in_file = %new_length%
+	EXIT /B
+:SaveDocument
+	ECHO [2J[H
+	ECHO [36m.------------------------------------.
+	ECHO ^|             [30;107mSAVE FILE?[0;36m             ^|
+	ECHO ^|------------------------------------^|
+	ECHO ^| [32m[%INP.YES%] Yes, save current file.        [36m^|
+	ECHO ^| [35m[%INP.SV_AS%] Yes, save as different file.   [36m^|
+	ECHO ^| [91m[%INP.NO%] No, don't save.               [36m ^|
+	ECHO ^|____________________________________^|
+	ECHO [4E[43mNote:[0;33m by using save as, you will[Echange the current file to the new file.
+	ECHO [6F
+	CHOICE /C:%INP.YES%%INP.NO%%INP.SV_AS% /N /M "[95m>[0m "
+	SET /A Save_mode = %ERRORLEVEL%
+	IF %Save_mode% == 2 (
+		EXIT /B
+	)
+	IF %Save_mode% == 3 (CALL :AskFilename)
+	ECHO [2J[H[0mSaving to:
+	ECHO [47m	%_-_-FILENAME-_-_%[0m
+	ECHO [EPlease wait...[E
+	IF _%FILE_1%_ == __ (
+			ECHO.>%_-_-FILENAME-_-_%
+		) ELSE (
+			ECHO %FILE_1%>%_-_-FILENAME-_-_%)
+	SET /A Saving_line_no = 2
+	@echo on
+	:Save-Loop
+		SET "CurrentFileLine=!FILE_%Saving_line_no%!"
+		IF _%CurrentFileLine%_ == __ (
+			ECHO.>>%_-_-FILENAME-_-_%
+		) ELSE (
+			ECHO !FILE_%Saving_line_no%!>>%_-_-FILENAME-_-_%)
+		ECHO Saved line %Saving_line_no% of %Lines_in_file%.
+		SET /A Saving_line_no += 1
+		IF %Saving_line_no% LEQ %Lines_in_file% (GOTO Save-Loop)
+	@echo off
+	pause
+	EXIT /B
+
+:AskFIlename
+	ECHO [J[ELeave blank to cancel.
+	ECHO [E[32mOld filename: %_-_-FILENAME-_-_%
+	SET /P NewFilename=[J[41mSave file as:[0;31m 
+	IF _%NewFilename%_ == __ (EXIT /B)
+	SET "_-_-FILENAME-_-_=%NewFilename%"
 	EXIT /B
